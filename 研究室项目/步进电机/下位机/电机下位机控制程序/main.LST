@@ -1,0 +1,347 @@
+C51 COMPILER V9.01   MAIN                                                                  01/21/2016 15:49:17 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: D:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          
+   2          /*===================================================================================================  
+   3          工程名称：  Ex1
+   4          功能描述：      控制TFT实现汉字，字符显示，和画点功能。
+   5          硬件连接：  查看和修改接口定义在NBCTFT.C中,请仔细检查接口连线。
+   6                ----------------------------------------
+   7               |     --------TFT控制接线----------      |
+   8               |                                        |
+   9               |          D10~D17   接   P0             |
+  10               |          RS        接   P2^5;          |
+  11               |                  RW        接   P2^4;          |
+  12               |                  RD        接   P2^3;          |
+  13               |              CS        接   P2^2;              |
+  14               |                  RES       接   P2^1;          |
+  15               |                                        |
+  16               |                  LE        接   P2^0;          |
+  17               |                                        |
+  18               |     --------电源供电接线---------      |
+  19               |          GND       接   电源负极       |
+  20               |          VIN       接   电源正极(5V)   |
+  21                ----------------------------------------
+  22          维护记录：  2015-11-13
+  23          ====================================================================================================*/
+  24          
+  25          //******************包含头文件***************************
+  26          
+  27          #include<reg52.h>    //包含单片机头文件
+  28          #include<intrins.h>
+  29          #include"NBCTFT.h"   //包含TFT驱动头文件
+  30          //#include<function.h>
+  31          //******************全局变量***************************
+  32          //#define AT24C02              0xa0  //AT24C02 地址
+  33          #define White          0xFFFF   //LCD color
+  34          #define Black          0x0000
+  35          #define Blue           0x001F
+  36          #define Blue2          0x051F
+  37          #define Red            0xF800
+  38          #define Magenta        0xF81F
+  39          #define Green          0x07E0
+  40          #define Cyan           0x7FFF
+  41          #define Yellow         0xFFE0
+  42          
+  43          sbit run=P1^2;
+  44          sbit direction_index=P1^3;
+  45          sbit modekey=P1^4;
+  46          sbit boardorcomputer=P1^5;
+  47          sbit direction=P2^6;
+  48          sbit motor=P2^7;
+  49          sbit microcontrol1=P3^2;
+  50          
+  51          unsigned int Device_code;      //TFT控制IC型号
+  52          unsigned char i=100,m,computer_char,computermode;
+  53          unsigned char pDat[8];
+  54          unsigned char rec,flag;
+  55          unsigned char num[]={'\0','\0','\0','\0'};
+C51 COMPILER V9.01   MAIN                                                                  01/21/2016 15:49:17 PAGE 2   
+
+  56          unsigned char display1[]={'0','1','2','3','4','5','6','7','8','9'};
+  57          unsigned char rec_line[]={'X','0','0','>','+','0','0','0','0','0','0','0','0','0','0'};
+  58          //**************声明外部函数和变量********************
+  59          
+  60          extern void delayms(unsigned int count);
+  61          
+  62          //================================================================================================
+  63          //      函数名称：      主函数
+  64          //      实现功能：      控制TFT实现汉字，字符显示.
+  65          //      参数：          无
+  66          //      返回值：        无
+  67          //================================================================================================
+  68          main()
+  69          {
+  70   1      //        unsigned char  run_computer,direction_index_computer;
+  71   1                      unsigned int x,y,z,di;
+  72   1                      float total,angle;
+  73   1                      
+  74   1                      Device_code=0x9320;                //TFT控制IC型号
+  75   1                      
+  76   1                      TFT_Initial();                     //初始化LCD
+  77   1                 
+  78   1                      PCON=0x80;               //设置波特率及串口中断
+  79   1                      SCON=0x50;
+  80   1                      TMOD=0x20;               //T0方式1
+  81   1                      TH1=0xF3;
+  82   1                      TL1=0xF3;
+  83   1                      IT0=1;
+  84   1                      IT1=1;
+  85   1                      TR1=1;
+  86   1                      EX1=1;
+  87   1                      EX0=1;
+  88   1                      ES=1;
+  89   1                      EA=1;   
+  90   1                      
+  91   1                      direction=1;
+  92   1                      Show_RGB(0,240,0,320,Blue);
+  93   1                      LCD_PutString(0,16,"        中 国 科 学 院        ",White,Blue);
+  94   1                      LCD_PutString(0,40,"    安徽光学精密机械研究所    ",White,Blue);
+  95   1                      LCD_PutString(0,72,"当前角度 ",White,Blue);
+  96   1                      LCD_PutString(110,72,"度",White,Blue);
+  97   1                      LCD_PutString(0,88,"当前值",White,Blue);
+  98   1                      LCD_PutString(0,120,"方向",White,Blue);
+  99   1                      LCD_PutString(0,152,"模式",White,Blue);
+ 100   1                      LCD_PutString(0,184,"状态",White,Blue);
+ 101   1                      LCD_PutString(0,304,"version 1,aiofm,hfcas",White,Blue);
+ 102   1                      while(1)                                
+ 103   1                      {          
+ 104   2                              LCD_PutChar(70,88,rec_line[11],White,Blue);
+ 105   2                              LCD_PutChar(78,88,rec_line[12],White,Blue);
+ 106   2                              LCD_PutChar(86,88,rec_line[13],White,Blue);
+ 107   2                              LCD_PutChar(94,88,rec_line[14],White,Blue);              
+ 108   2      
+ 109   2                              total=(float)(((int)num[0])*1000+((int)num[1])*100+num[2]*10+((int)num[3])); //显示当前读数
+ 110   2                              angle=total/4095.0*360.0;
+ 111   2                              x=((int)angle)/100;
+ 112   2                              y=((int)angle)/10%10;
+ 113   2                              z=((int)angle)%10;
+ 114   2                              di=((int)(angle*10))%10;          
+ 115   2                                       
+ 116   2                              LCD_PutChar(70,72,display1[x],White,Blue);                //显示当前角度
+ 117   2                              LCD_PutChar(78,72,display1[y],White,Blue);
+C51 COMPILER V9.01   MAIN                                                                  01/21/2016 15:49:17 PAGE 3   
+
+ 118   2                              LCD_PutChar(86,72,display1[z],White,Blue);
+ 119   2                              LCD_PutChar(94,72,'.',White,Blue);
+ 120   2                              LCD_PutChar(102,72,display1[di],White,Blue);
+ 121   2                              if(boardorcomputer==1)
+ 122   2                                      {                       
+ 123   3                                                      if(run==0)
+ 124   3                                                      {       
+ 125   4                                                              LCD_PutString(40,184,"运行",White,Blue);        
+ 126   4                                                              TH0 = (8192 - 200)/32   ;  //给计数器装初值
+ 127   4                                                              TL0 = (8192 - 200)%32   ;        
+ 128   4                                                              ET0=1;
+ 129   4                                                              TR0=1;
+ 130   4                                                      }
+ 131   3                                                      else
+ 132   3                                                      {
+ 133   4                                                              LCD_PutString(40,184,"停止",White,Blue);
+ 134   4                                                              ET0 = 0;       
+ 135   4                                                              TR0 = 0;
+ 136   4                                                              motor=0;
+ 137   4                                                      }
+ 138   3                                                      if(direction_index==1)
+ 139   3                                                      {
+ 140   4                                                              LCD_PutString(40,120,"逆时针",White,Blue);
+ 141   4                                                              direction=0;
+ 142   4                                                      }
+ 143   3                                                      else
+ 144   3                                                      {
+ 145   4                                                              LCD_PutString(40,120,"顺时针",White,Blue);
+ 146   4                                                              direction=1;
+ 147   4                                                      }
+ 148   3                                                      if(modekey==1)
+ 149   3                                                      {
+ 150   4                                                              LCD_PutString(40,152,"常规",White,Blue);
+ 151   4                                                      }
+ 152   3                                                      else
+ 153   3                                                      {
+ 154   4                                                              LCD_PutString(40,152,"微调",White,Blue);
+ 155   4                                                      }       
+ 156   3                              
+ 157   3                                      }
+ 158   2                                      else
+ 159   2                                      {
+ 160   3                                              switch(computer_char)
+ 161   3                                              {
+ 162   4                                                 case 0xff:
+ 163   4                                                 {
+ 164   5                                                              LCD_PutString(40,184,"运行",White,Blue);        
+ 165   5                                                              TH0 = (8192 - 200)/32   ;  //给计数器装初值
+ 166   5                                                              TL0 = (8192 - 200)%32   ;        
+ 167   5                                                              ET0=1;
+ 168   5                                                              TR0=1;
+ 169   5                                                              break;
+ 170   5                                                 }
+ 171   4                                                 case 0x00:
+ 172   4                                                 {
+ 173   5                                                              LCD_PutString(40,184,"停止",White,Blue);
+ 174   5                                                              ET0 = 0;       
+ 175   5                                                              TR0 = 0;
+ 176   5                                                              motor=0;
+ 177   5                                                              break;
+ 178   5                                                      }
+ 179   4                                                      case 0xf0:
+C51 COMPILER V9.01   MAIN                                                                  01/21/2016 15:49:17 PAGE 4   
+
+ 180   4                                                      {
+ 181   5                                                              LCD_PutString(40,120,"逆时针",White,Blue);
+ 182   5                                                              direction=0;
+ 183   5                                                              break;
+ 184   5                                                      }
+ 185   4                                                      case 0x0f:
+ 186   4                                                      {
+ 187   5                                                              LCD_PutString(40,120,"顺时针",White,Blue);
+ 188   5                                                              direction=1;
+ 189   5                                                              break;
+ 190   5                                                      }
+ 191   4                                                      case 0x30:
+ 192   4                                                      {
+ 193   5                                                              computermode=0;
+ 194   5                                                              LCD_PutString(40,152,"常规",White,Blue);
+ 195   5                                                              break;
+ 196   5                                                      }
+ 197   4                                                      case 0x03:
+ 198   4                                                      {
+ 199   5                                                              computermode=1;
+ 200   5                                                              LCD_PutString(40,152,"微调",White,Blue);
+ 201   5                                                              break;
+ 202   5                                                      }
+ 203   4                                                 defult:break;
+ 204   4                                              }
+ 205   3                                      }
+ 206   2                      }
+ 207   1      }
+*** WARNING C280 IN LINE 203 OF MAIN.C: 'defult': unreferenced label
+ 208          
+ 209          void ser_int(void) interrupt 4 //using 1
+ 210          {
+ 211   1              
+ 212   1              
+ 213   1               if(RI == 1)        //RI接受中断标志
+ 214   1               {
+ 215   2                       if(boardorcomputer==1)
+ 216   2                       {
+ 217   3                                      rec = SBUF;  //SUBF接受/发送缓冲器
+ 218   3                                      if(rec=='X')
+ 219   3                                      {
+ 220   4                                              i=0;
+ 221   4                                      }
+ 222   3                                      switch(i)
+ 223   3                                      {
+ 224   4                                              case 11:
+ 225   4                                              {
+ 226   5                                                      rec_line[i]=rec;
+ 227   5                                                      num[0]=rec-48;
+ 228   5                                                      break;
+ 229   5                                              }
+ 230   4                                              case 12:
+ 231   4                                              {
+ 232   5                                                      rec_line[i]=rec;
+ 233   5                                                      num[1]=rec-48;
+ 234   5                                                      break;
+ 235   5                                              }
+ 236   4                                              case 13:
+ 237   4                                              {
+ 238   5                                                      rec_line[i]=rec;
+ 239   5                                                      num[2]=rec-48;
+ 240   5                                                      break;
+C51 COMPILER V9.01   MAIN                                                                  01/21/2016 15:49:17 PAGE 5   
+
+ 241   5                                              }
+ 242   4                                              case 14:
+ 243   4                                              {
+ 244   5                                                      rec_line[i]=rec;
+ 245   5                                                      num[3]=rec-48;
+ 246   5                                                      break;
+ 247   5                                              }
+ 248   4                                              defult:break;
+ 249   4                                      }
+ 250   3                                      RI = 0;                          
+ 251   3                                      i++;
+ 252   3                      }
+ 253   2                      else
+ 254   2                      {
+ 255   3                              rec = SBUF;
+ 256   3                              computer_char=rec;
+ 257   3                              if(rec==0x88)
+ 258   3                              {
+ 259   4                                      if(computermode==1)
+ 260   4                                      {
+ 261   5                                              motor=1;
+ 262   5                                              _nop_();
+ 263   5                                              _nop_();
+ 264   5                                              _nop_();
+ 265   5                                              _nop_();
+ 266   5                                              _nop_();
+ 267   5                                              motor=0;
+ 268   5                                              _nop_();
+ 269   5                                              _nop_();
+ 270   5                                              _nop_();
+ 271   5                                              _nop_();
+ 272   5                                              _nop_();
+ 273   5                                      }
+ 274   4                              }
+ 275   3                              rec=0;
+ 276   3                              RI=0;
+ 277   3                      }          
+ 278   2              }
+ 279   1      }
+*** WARNING C280 IN LINE 248 OF MAIN.C: 'defult': unreferenced label
+ 280          
+ 281          void Timer0() interrupt 1
+ 282          {
+ 283   1         TH0 = (8192 - 200)/32        ;  //给计数器装初值
+ 284   1         TL0 = (8192 - 200)%32        ;
+ 285   1         motor = ~motor;//    }
+ 286   1      }
+ 287          
+ 288          void run_one() interrupt 0                         //3 为定时器1的中断号  1 定时器0的中断号 0 外部中断1 2 外部中断2  4 串口中
+             -断
+ 289          {
+ 290   1              unsigned int delay_count=200;
+ 291   1              while(delay_count--);
+ 292   1              if(microcontrol1==0)
+ 293   1              {
+ 294   2                      if(modekey==0)
+ 295   2                      {
+ 296   3                              motor=1;
+ 297   3      //                      _nop_();
+ 298   3      //                      _nop_();
+ 299   3      //                      _nop_();
+ 300   3      //                      _nop_();
+C51 COMPILER V9.01   MAIN                                                                  01/21/2016 15:49:17 PAGE 6   
+
+ 301   3      //                      _nop_();
+ 302   3                      }
+ 303   2              }
+ 304   1      }
+ 305          void run_ten() interrupt 2
+ 306          {
+ 307   1              if(modekey==0)
+ 308   1              {       
+ 309   2                      motor=1;
+ 310   2              }
+ 311   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1389    ----
+   CONSTANT SIZE    =    153    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     45      12
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  2 WARNING(S),  0 ERROR(S)

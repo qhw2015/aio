@@ -1,0 +1,10 @@
+D:\program\研究室项目\步进电机\C#仪表盘控件\Meter\Meter\Test\bin\Release\Test.exe
+D:\program\研究室项目\步进电机\C#仪表盘控件\Meter\Meter\Test\bin\Release\Test.pdb
+D:\program\研究室项目\步进电机\C#仪表盘控件\Meter\Meter\Test\bin\Release\Meter.dll
+D:\program\研究室项目\步进电机\C#仪表盘控件\Meter\Meter\Test\bin\Release\Meter.pdb
+D:\program\研究室项目\步进电机\C#仪表盘控件\Meter\Meter\Test\obj\x86\Release\Test.csprojResolveAssemblyReference.cache
+D:\program\研究室项目\步进电机\C#仪表盘控件\Meter\Meter\Test\obj\x86\Release\Test.Form1.resources
+D:\program\研究室项目\步进电机\C#仪表盘控件\Meter\Meter\Test\obj\x86\Release\Test.Properties.Resources.resources
+D:\program\研究室项目\步进电机\C#仪表盘控件\Meter\Meter\Test\obj\x86\Release\Test.csproj.GenerateResource.Cache
+D:\program\研究室项目\步进电机\C#仪表盘控件\Meter\Meter\Test\obj\x86\Release\Test.exe
+D:\program\研究室项目\步进电机\C#仪表盘控件\Meter\Meter\Test\obj\x86\Release\Test.pdb

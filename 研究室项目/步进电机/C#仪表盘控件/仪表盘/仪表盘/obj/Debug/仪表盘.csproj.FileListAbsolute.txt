@@ -1,0 +1,13 @@
+D:\program\研究室项目\步进电机\C#仪表盘控件\仪表盘\仪表盘\bin\Debug\仪表盘.exe.config
+D:\program\研究室项目\步进电机\C#仪表盘控件\仪表盘\仪表盘\bin\Debug\仪表盘.exe
+D:\program\研究室项目\步进电机\C#仪表盘控件\仪表盘\仪表盘\bin\Debug\仪表盘.pdb
+D:\program\研究室项目\步进电机\C#仪表盘控件\仪表盘\仪表盘\bin\Debug\Meter.dll
+D:\program\研究室项目\步进电机\C#仪表盘控件\仪表盘\仪表盘\bin\Debug\Meter.pdb
+D:\program\研究室项目\步进电机\C#仪表盘控件\仪表盘\仪表盘\obj\Debug\仪表盘.csprojResolveAssemblyReference.cache
+D:\program\研究室项目\步进电机\C#仪表盘控件\仪表盘\仪表盘\obj\Debug\仪表盘.Form1.resources
+D:\program\研究室项目\步进电机\C#仪表盘控件\仪表盘\仪表盘\obj\Debug\仪表盘.Properties.Resources.resources
+D:\program\研究室项目\步进电机\C#仪表盘控件\仪表盘\仪表盘\obj\Debug\仪表盘.csproj.GenerateResource.Cache
+D:\program\研究室项目\步进电机\C#仪表盘控件\仪表盘\仪表盘\obj\Debug\仪表盘.exe
+D:\program\研究室项目\步进电机\C#仪表盘控件\仪表盘\仪表盘\obj\Debug\仪表盘.pdb
+D:\program\研究室项目\步进电机\C#仪表盘控件\仪表盘\仪表盘\bin\Debug\狙击精英控件.dll
+D:\program\研究室项目\步进电机\C#仪表盘控件\仪表盘\仪表盘\bin\Debug\狙击精英控件.pdb
